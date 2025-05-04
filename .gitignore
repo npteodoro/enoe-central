@@ -1,0 +1,63 @@
+
+---
+
+**`.gitignore`**  
+```gitignore
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Env and config
+config/env/*.yaml
+config/env/.env
+*.env
+
+# Docker
+docker-compose.override.yml
+.docker/
+
+# Logs and databases
+*.log
+*.sqlite3
+*.db
+
+# Migrations
+migrations/versions/*.pyc
+migrations/versions/__pycache__/
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*~
+
+# Pytest
+htmlcov/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+.pytest_cache/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Virtualenv
+venv/
+env/
+.venv/
+
+# Secrets
+*.pem
+*.key
