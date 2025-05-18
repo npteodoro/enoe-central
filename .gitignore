@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.env
+.env
+.venv/
+venv/
+*.egg-info/
+*.egg
+*.log
+
+# Jupyter
+.ipynb_checkpoints
+
+# Docker
+*.pid
+*.seed
+*.swp
+docker-compose.override.yml
+.env
+enoe/river_images/
+influxdb-data/
+grafana-data/
+mosquitto-data/
+mosquitto-log/
+redis-data/
+
+# OS
+.DS_Store
+Thumbs.db
