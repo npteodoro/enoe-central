@@ -23,6 +23,7 @@ write_api = influx_client.write_api()
 
 @celery_app.task
 def write_to_influx(topic, payload):
+    """Write a single message to InfluxDB."""
     try:
         data = json.loads(payload)
         point = (
@@ -41,13 +42,27 @@ def write_to_influx(topic, payload):
     except Exception as e:
         print(f"Failed to parse or write payload: {payload} ({e})")
 
-def main():
-    while True:
-        for key in redis_client.scan_iter("mqtt:*"):
-            topic = key.decode().split("mqtt:")[1]
+@celery_app.task
+def process_redis_messages():
+    """Scan Redis for messages and enqueue them for writing to InfluxDB."""
+    for key in redis_client.scan_iter("mqtt:*"):
+        print("message found")
+        topic = key.decode().split("mqtt:")[1]
+        print(f"Processing: {topic}")
+        while True:
             payload = redis_client.rpop(key)
-            if payload:
-                write_to_influx.delay(topic, payload.decode())
+            if not payload:
+                break
+            write_to_influx.delay(topic, payload.decode())
+        # Optionally delete the key if it's empty
+        if redis_client.llen(key) == 0:
+            redis_client.delete(key)
+
+def main():
+    """Continuously enqueue Redis processing tasks."""
+    print("Starting Redis message processing...")
+    while True:
+        process_redis_messages.delay()
 
 if __name__ == "__main__":
     main()

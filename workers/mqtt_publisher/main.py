@@ -31,7 +31,6 @@ def main():
     while True:
         message = generate_message()
         payload = json.dumps(message)
-        print(f"To Publish: {payload}")
         client.publish(MQTT_TOPIC, payload)
         print(f"Published: {payload}")
         time.sleep(PUBLISH_INTERVAL)
