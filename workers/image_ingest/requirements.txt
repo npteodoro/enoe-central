@@ -1,4 +1,2 @@
-paho-mqtt
 redis
-celery
 influxdb-client
