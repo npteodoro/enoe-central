@@ -20,16 +20,6 @@ services:
     networks:
       - app-net
 
-  mqtt_ingest:
-    build: ./workers/mqtt_ingest
-    env_file:
-      - .env
-    depends_on:
-      - redis
-      - mqtt-broker
-    networks:
-      - app-net
-
   influxdb:
     image: influxdb:2.7
     environment:
@@ -59,6 +49,25 @@ services:
       - app-net
     env_file:
       - .env
+
+  mqtt_publisher:
+    build: ./workers/mqtt_publisher
+    depends_on:
+      - mqtt-broker
+    env_file:
+      - .env
+    networks:
+      - app-net
+
+  mqtt_ingest:
+    build: ./workers/mqtt_ingest
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - mqtt-broker
+    networks:
+      - app-net
 
   db_writer:
     build: ./workers/db_writer
