@@ -89,6 +89,19 @@ services:
     networks:
       - app-net
 
+  test_client:
+    build: ./workers/test_client
+    env_file:
+      - .env
+    depends_on:
+      - mqtt-broker
+      - mqtt_ingest
+      - db_writer
+      - redis
+      - influxdb
+    networks:
+      - app-net
+
 volumes:
   influxdb-data:
   grafana-data:
