@@ -1,2 +1,3 @@
 redis
 influxdb-client
+celery

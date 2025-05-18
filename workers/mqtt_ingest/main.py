@@ -1,19 +1,12 @@
 import os
 import redis
 import paho.mqtt.client as mqtt
-from celery import Celery
 
 REDIS_HOST = os.environ.get("REDIS_HOST", "redis")
 REDIS_PORT = int(os.environ.get("REDIS_PORT", 6379))
 MQTT_BROKER = os.environ.get("MQTT_BROKER", "mqtt-broker")
 MQTT_PORT = int(os.environ.get("MQTT_PORT", 1883))
 MQTT_TOPIC = os.environ.get("MQTT_TOPIC", "test/topic")
-
-celery_app = Celery(
-    'mqtt_persistence',
-    broker=f'redis://{REDIS_HOST}:{REDIS_PORT}/0',
-    backend=f'redis://{REDIS_HOST}:{REDIS_PORT}/0'
-)
 
 redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0)
 

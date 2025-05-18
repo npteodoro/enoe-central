@@ -69,23 +69,57 @@ services:
     networks:
       - app-net
 
-  db_writer:
-    build: ./workers/db_writer
+  db_writer_poller:
+    build:
+      context: .
+      dockerfile: workers/db_writer/Dockerfile
+    working_dir: /app/workers/db_writer
     env_file:
       - .env
     depends_on:
       - redis
       - influxdb
+    command: ["python", "-u", "main.py"]
     networks:
       - app-net
 
-  image_ingest:
-    build: ./workers/image_ingest
+  db_writer_worker:
+    build:
+      context: .
+      dockerfile: workers/db_writer/Dockerfile
     env_file:
       - .env
     depends_on:
       - redis
       - influxdb
+    command: ["celery", "-A", "db_writer.main", "worker", "--loglevel=info"]
+    networks:
+      - app-net
+
+  image_ingest_poller:
+    build:
+      context: .
+      dockerfile: workers/image_ingest/Dockerfile
+    working_dir: /app/workers/image_ingest
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - influxdb
+    command: ["python", "-u", "main.py"]
+    networks:
+      - app-net
+
+  image_ingest_worker:
+    build:
+      context: .
+      dockerfile: workers/image_ingest/Dockerfile
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - influxdb
+    command: ["celery", "-A", "image_ingest.main", "worker", "--loglevel=info"]
     networks:
       - app-net
 
@@ -96,7 +130,8 @@ services:
     depends_on:
       - mqtt-broker
       - mqtt_ingest
-      - db_writer
+      - db_writer_poller
+      - db_writer_worker
       - redis
       - influxdb
     networks:

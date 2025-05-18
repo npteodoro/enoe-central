@@ -2,9 +2,11 @@ FROM python:alpine
 
 WORKDIR /app
 
-COPY requirements.txt .
+COPY workers/image_ingest/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY main.py .
+COPY workers /app/workers
 
-CMD ["python", "-u", "main.py"]
+ENV PYTHONPATH="/app/workers:${PYTHONPATH}"
+
+CMD ["celery", "-A", "image_ingest.main", "worker", "--loglevel=info"]
