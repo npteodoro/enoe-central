@@ -1,3 +1,4 @@
 celery
 redis
 influxdb-client
+paho-mqtt

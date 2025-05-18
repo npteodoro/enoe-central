@@ -21,7 +21,7 @@ services:
       - app-net
 
   mqtt_ingest:
-    build: ./workers/mqtt_persistence
+    build: ./workers/mqtt_ingest
     env_file:
       - .env
     depends_on:
@@ -50,8 +50,6 @@ services:
     image: grafana/grafana:9.5.0
     depends_on:
       - influxdb
-    environment:
-      GF_INSTALL_PLUGINS: "grafana-influxdb-datasource"
     ports:
       - "3000:3000"
     volumes:
@@ -61,7 +59,17 @@ services:
       - app-net
 
   db_writer:
-    build: ./workers/redis_to_influx
+    build: ./workers/db_writer
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - influxdb
+    networks:
+      - app-net
+
+  image_ingest:
+    build: ./workers/image_ingest
     env_file:
       - .env
     depends_on:

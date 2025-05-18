@@ -41,13 +41,9 @@ def write_to_influx(topic, payload):
     except Exception as e:
         print(f"Failed to parse or write payload: {payload} ({e})")
 
-def main():
-    while True:
-        for key in redis_client.scan_iter("mqtt:*"):
-            topic = key.decode().split("mqtt:")[1]
-            payload = redis_client.rpop(key)
-            if payload:
-                write_to_influx.delay(topic, payload.decode())
-
-if __name__ == "__main__":
-    main()
+while True:
+    for key in redis_client.scan_iter("mqtt:*"):
+        topic = key.decode().split("mqtt:")[1]
+        payload = redis_client.rpop(key)
+        if payload:
+            write_to_influx.delay(topic, payload.decode())
