@@ -17,9 +17,9 @@ celery_app = Celery(
 
 redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0)
 
-@celery_app.task
 def persist_message(topic, payload):
     redis_client.lpush(f"mqtt:{topic}", payload)
+    print(f"Pushed to Redis: mqtt:{topic} -> {payload}")
 
 def on_connect(client, userdata, flags, rc):
     print(f"Connected to MQTT broker with result code {rc}")
@@ -28,7 +28,7 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, msg):
     payload = msg.payload.decode()
     print(f"Received message on {msg.topic}: {payload}")
-    persist_message.delay(msg.topic, payload)
+    persist_message(msg.topic, payload)
 
 def main():
     client = mqtt.Client()

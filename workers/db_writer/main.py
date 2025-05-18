@@ -3,6 +3,7 @@ import redis
 from celery import Celery
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 import json
+import time
 
 REDIS_HOST = os.environ.get("REDIS_HOST", "redis")
 REDIS_PORT = int(os.environ.get("REDIS_PORT", 6379))
@@ -21,7 +22,6 @@ redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0)
 influx_client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
 write_api = influx_client.write_api()
 
-@celery_app.task
 def write_to_influx(topic, payload):
     try:
         data = json.loads(payload)
@@ -42,12 +42,20 @@ def write_to_influx(topic, payload):
         print(f"Failed to parse or write payload: {payload} ({e})")
 
 def main():
+    print("db_writer started, scanning for mqtt:* keys in Redis...")
+    print("INFLUXDB_URL:", INFLUXDB_URL)
+    print("INFLUXDB_TOKEN:", INFLUXDB_TOKEN)
+    print("INFLUXDB_ORG:", INFLUXDB_ORG)
+    print("INFLUXDB_BUCKET:", INFLUXDB_BUCKET)
     while True:
         for key in redis_client.scan_iter("mqtt:*"):
+            print(f"Found Redis key: {key}")
             topic = key.decode().split("mqtt:")[1]
             payload = redis_client.rpop(key)
             if payload:
-                write_to_influx.delay(topic, payload.decode())
+                print(f"Processing payload from {key}: {payload}")
+                write_to_influx(topic, payload.decode())  # <-- Remove .delay
+        time.sleep(1)
 
 if __name__ == "__main__":
     main()
