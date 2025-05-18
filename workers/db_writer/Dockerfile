@@ -7,4 +7,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY main.py .
 
-CMD ["celery", "-A", "main", "worker", "--loglevel=info"]
+CMD ["python", "main.py"]

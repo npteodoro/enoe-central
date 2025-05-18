@@ -57,6 +57,8 @@ services:
       - ./grafana/provisioning:/etc/grafana/provisioning
     networks:
       - app-net
+    env_file:
+      - .env
 
   db_writer:
     build: ./workers/db_writer

@@ -19,7 +19,7 @@ celery_app = Celery(
 
 redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0)
 influx_client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
-write_api = influx_client.write_api(write_options=None)
+write_api = influx_client.write_api()
 
 @celery_app.task
 def write_to_influx(topic, payload):
@@ -41,9 +41,13 @@ def write_to_influx(topic, payload):
     except Exception as e:
         print(f"Failed to parse or write payload: {payload} ({e})")
 
-while True:
-    for key in redis_client.scan_iter("mqtt:*"):
-        topic = key.decode().split("mqtt:")[1]
-        payload = redis_client.rpop(key)
-        if payload:
-            write_to_influx.delay(topic, payload.decode())
+def main():
+    while True:
+        for key in redis_client.scan_iter("mqtt:*"):
+            topic = key.decode().split("mqtt:")[1]
+            payload = redis_client.rpop(key)
+            if payload:
+                write_to_influx.delay(topic, payload.decode())
+
+if __name__ == "__main__":
+    main()

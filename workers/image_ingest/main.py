@@ -17,7 +17,7 @@ os.makedirs(IMAGE_FOLDER, exist_ok=True)
 
 redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0)
 influx_client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
-write_api = influx_client.write_api(write_options=None)
+write_api = influx_client.write_api()
 
 def compute_hash(filepath):
     sha256 = hashlib.sha256()
