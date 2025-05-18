@@ -1,0 +1,10 @@
+# Dev tools
+pytest
+black
+flake8
+
+# All worker dependencies
+paho-mqtt
+redis
+celery
+influxdb-client

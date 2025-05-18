@@ -1,0 +1,82 @@
+services:
+  mqtt-broker:
+    image: eclipse-mosquitto:2.0.15
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - mosquitto-data:/mosquitto/data
+      - mosquitto-log:/mosquitto/log
+      - ./mqtt/config:/mosquitto/config
+    networks:
+      - app-net
+
+  redis:
+    image: redis:7.2
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - app-net
+
+  mqtt_ingest:
+    build: ./workers/mqtt_persistence
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - mqtt-broker
+    networks:
+      - app-net
+
+  influxdb:
+    image: influxdb:2.7
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUXDB_USERNAME}
+      DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUXDB_PASSWORD}
+      DOCKER_INFLUXDB_INIT_ORG: ${INFLUXDB_ORG}
+      DOCKER_INFLUXDB_INIT_BUCKET: ${INFLUXDB_BUCKET}
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_ADMIN_TOKEN}
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+    ports:
+      - "8086:8086"
+    networks:
+      - app-net
+
+  grafana:
+    image: grafana/grafana:9.5.0
+    depends_on:
+      - influxdb
+    environment:
+      GF_INSTALL_PLUGINS: "grafana-influxdb-datasource"
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - app-net
+
+  db_writer:
+    build: ./workers/redis_to_influx
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - influxdb
+    networks:
+      - app-net
+
+volumes:
+  influxdb-data:
+  grafana-data:
+  mosquitto-data:
+  mosquitto-log:
+  redis-data:
+
+networks:
+  app-net:
+    driver: bridge
