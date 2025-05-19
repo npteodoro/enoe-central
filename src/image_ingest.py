@@ -11,7 +11,7 @@ INFLUXDB_URL = os.environ.get("INFLUXDB_URL", "http://influxdb:8086")
 INFLUXDB_TOKEN = os.environ.get("INFLUXDB_ADMIN_TOKEN")
 INFLUXDB_ORG = os.environ.get("INFLUXDB_ORG")
 INFLUXDB_BUCKET = os.environ.get("INFLUXDB_BUCKET")
-IMAGE_FOLDER = "enoe/river_images"
+IMAGE_FOLDER = "/tmp/enoe/river_images"
 
 os.makedirs(IMAGE_FOLDER, exist_ok=True)
 

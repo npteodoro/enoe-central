@@ -51,16 +51,22 @@ services:
       - .env
 
   mqtt_publisher:
-    build: ./workers/mqtt_publisher
-    depends_on:
-      - mqtt-broker
+    build: ./src
+    command: python -u mqtt_publisher.py
+    environment:
+      PYTHONUNBUFFERED: 1
     env_file:
       - .env
+    depends_on:
+      - mqtt-broker
     networks:
       - app-net
 
   mqtt_ingest:
-    build: ./workers/mqtt_ingest
+    build: ./src
+    command: python -u main.py
+    environment:
+      PYTHONUNBUFFERED: 1
     env_file:
       - .env
     depends_on:
@@ -70,17 +76,21 @@ services:
       - app-net
 
   db_writer:
-    build: ./workers/db_writer
+    build: ./src
+    command: celery -A enoe_central worker --loglevel=info
+    environment:
+      PYTHONUNBUFFERED: 1
     env_file:
       - .env
     depends_on:
       - redis
-      - influxdb
+      - mqtt-broker
     networks:
       - app-net
 
   image_ingest:
-    build: ./workers/image_ingest
+    build: ./src
+    command: python -u image_ingest.py
     env_file:
       - .env
     depends_on:

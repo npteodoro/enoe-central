@@ -1,25 +1,10 @@
 import os
-import redis
 import paho.mqtt.client as mqtt
-from celery import Celery
+from enoe_central.celery_tasks import db_writer
 
-REDIS_HOST = os.environ.get("REDIS_HOST", "redis")
-REDIS_PORT = int(os.environ.get("REDIS_PORT", 6379))
 MQTT_BROKER = os.environ.get("MQTT_BROKER", "mqtt-broker")
 MQTT_PORT = int(os.environ.get("MQTT_PORT", 1883))
 MQTT_TOPIC = os.environ.get("MQTT_TOPIC", "test/topic")
-
-celery_app = Celery(
-    'mqtt_persistence',
-    broker=f'redis://{REDIS_HOST}:{REDIS_PORT}/0',
-    backend=f'redis://{REDIS_HOST}:{REDIS_PORT}/0'
-)
-
-redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0)
-
-@celery_app.task
-def persist_message(topic, payload):
-    redis_client.lpush(f"mqtt:{topic}", payload)
 
 def on_connect(client, userdata, flags, rc):
     print(f"Connected to MQTT broker with result code {rc}")
@@ -28,9 +13,10 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, msg):
     payload = msg.payload.decode()
     print(f"Received message on {msg.topic}: {payload}")
-    persist_message.delay(msg.topic, payload)
+    db_writer.delay(msg.topic, payload)
 
 def main():
+    print("Starting MQTT client...")
     client = mqtt.Client()
     client.on_connect = on_connect
     client.on_message = on_message
