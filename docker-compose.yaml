@@ -51,7 +51,8 @@ services:
       - .env
 
   mqtt_publisher:
-    build: ./src
+    build:
+      context: .
     command: python -u mqtt_publisher.py
     environment:
       PYTHONUNBUFFERED: 1
@@ -63,7 +64,8 @@ services:
       - app-net
 
   mqtt_ingest:
-    build: ./src
+    build:
+      context: .
     command: python -u main.py
     environment:
       PYTHONUNBUFFERED: 1
@@ -74,9 +76,9 @@ services:
       - mqtt-broker
     networks:
       - app-net
-
   db_writer:
-    build: ./src
+    build:
+      context: .
     command: celery -A enoe_central worker --loglevel=info
     environment:
       PYTHONUNBUFFERED: 1
@@ -87,9 +89,9 @@ services:
       - mqtt-broker
     networks:
       - app-net
-
   image_ingest:
-    build: ./src
+    build:
+      context: .
     command: python -u image_ingest.py
     env_file:
       - .env
