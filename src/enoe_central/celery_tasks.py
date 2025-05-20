@@ -1,5 +1,6 @@
 from .celery import app
 from influxdb_client import InfluxDBClient, Point, WritePrecision
+from influxdb_client.client.write_api import SYNCHRONOUS
 import json
 import os
 
@@ -10,7 +11,7 @@ INFLUXDB_BUCKET = os.environ.get("INFLUXDB_BUCKET")
 
 influx_client = InfluxDBClient(url=INFLUXDB_URL, org=INFLUXDB_ORG, token=INFLUXDB_TOKEN, debug=True)
 
-write_api = influx_client.write_api()
+write_api = influx_client.write_api(write_options=SYNCHRONOUS)
 
 @app.task
 def db_writer(topic, payload):
@@ -32,6 +33,7 @@ def db_writer(topic, payload):
         )
         write_api.write(bucket=INFLUXDB_BUCKET, record=point)
         print(f"Recorded {INFLUXDB_BUCKET} -> {point}")
+
     except Exception as e:
         print(f"Failed to parse or write payload: {payload} ({e})")
         raise

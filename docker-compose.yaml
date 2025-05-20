@@ -76,6 +76,7 @@ services:
       - mqtt-broker
     networks:
       - app-net
+
   db_writer:
     build:
       context: .
@@ -89,6 +90,7 @@ services:
       - mqtt-broker
     networks:
       - app-net
+
   image_ingest:
     build:
       context: .
